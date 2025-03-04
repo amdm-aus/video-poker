@@ -53,23 +53,31 @@ def check_duplicates(hand):
 # Input - hand: a list of cards
 # Output - two booleans, one for if the hand is a straight, one for if the hand is an ace high straight
 def check_straight(hand):
-    # Find the lowest card in the hand, used for an equation later
-    lowest_card = min(hand, key=lambda card : card.value)
+    # Sort the hand lowest to highest
+    sorted_hand = sorted(hand, key=lambda card : card.value)
 
     # Initialise variables
     is_straight = False
     is_acehigh = False
-    ace_high_check = 0
-    straight_check = 0
+    acehigh_check = [1,10,11,12,13]
 
-    for card in hand:
-        ace_high_check = ace_high_check + card.value # For an ace high straight, the sum of all card values will be 47
-        straight_check = straight_check + (card.value - lowest_card.value) # For a straight, this equation will equal 10
-    if ace_high_check == 47:
-        is_acehigh = True # This is only needed to be able to check for a royal flush
-        is_straight = True
-    elif straight_check == 10:
-        is_straight = True
+    for i, card in enumerate(sorted_hand):
+        if card.value == acehigh_check[i]:
+            is_acehigh = True
+            is_straight = True
+        else:
+            is_acehigh = False
+            is_straight = False
+            break
+    
+    if not is_acehigh:
+        for i in range(4):
+            if sorted_hand[i].value == sorted_hand[i+1].value - 1:
+                is_straight = True
+            else:
+                is_straight = False
+                break
+
     return [is_straight, is_acehigh]
 
 # Define the suits, card names, and a dictionary of the card values associated with those names.
@@ -92,7 +100,7 @@ card_values = {
 }
 
 # Array of duplicate hand types. Location in the array corresponds to the integers output by check_duplicates()
-duplicate_hands = ['high card', 'pair', 'two Pair', 'three of a kind', 'full house', 'four of a kind']
+duplicate_hands = ['high card', 'pair', 'two pair', 'three of a kind', 'full house', 'four of a kind']
 
 # Loop through the suits and names to generate a deck of cards
 deck=[]
@@ -105,8 +113,9 @@ for suit in suits:
 # deck = [Card(2, 'H', 2), Card(2, 'H', 2), Card(2, 'H', 2), Card(2, 'H', 2), Card(3, 'D', 3), Card(3, 'D', 3), Card(3, 'D', 3), Card(3, 'D', 3)]
 
 # Straight check arrays
-# deck = [Card('A', 'H', 9), Card('2', 'H', 10), Card('3', 'H', 11), Card('4', 'H', 12), Card('5', 'D', 13)]
+# deck = [Card('A', 'H', 9), Card('2', 'H', 10), Card('3', 'H', 11), Card('4', 'H', 12), Card('5', 'H', 13)]
 # deck = [Card('A', 'H', 1), Card('J', 'H', 11), Card('10', 'H', 10), Card('Q', 'H', 12), Card('K', 'H', 13),]
+# deck = [Card('A', 'S', 1), Card('3', 'D', 3), Card('3', 'H', 3), Card('A', 'D', 1), Card('7', 'S', 7)]
 
 while True:
     # Shuffle the deck
@@ -130,6 +139,8 @@ while True:
         print('Your code is cooked!')
     elif is_flush and is_straight[0] and is_straight[1]:
         print(text_start, 'royal flush! Holy shitballs!')
+    elif is_flush and is_straight[0]:
+        print(text_start, 'straight flush.')
     elif check_duplicates(hand) > 3:
         print(text_start, duplicate_hands[duplicate_type])
     elif is_flush:
